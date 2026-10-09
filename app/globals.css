@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: 238 243 233;
+  --surface: 250 252 247;
+  --ink: 27 42 34;
+  --muted: 94 111 99;
+  --line: 214 224 207;
+  --moss: 40 84 62;
+  --fern: 84 133 74;
+  --ok: 52 140 88;
+  --warn: 191 128 20;
+  --bad: 190 78 62;
+}
+
+.dark {
+  --paper: 15 22 17;
+  --surface: 22 32 25;
+  --ink: 230 238 226;
+  --muted: 148 165 150;
+  --line: 38 53 43;
+  --moss: 150 200 160;
+  --fern: 120 176 108;
+  --ok: 96 184 130;
+  --warn: 224 166 60;
+  --bad: 228 120 100;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--fern));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+@keyframes caret { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5ch;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: rgb(var(--fern));
+  animation: caret 1s steps(1) infinite;
+}
