@@ -27,11 +27,47 @@ export interface SensorMeta {
   group: "Soil" | "Air";
 }
 
-export const PLANT = {
-  name: "Monstera",
-  species: "Monstera deliciosa",
-  location: "Living room, east window",
-};
+export interface PlantProfile {
+  id: string;
+  name: string;
+  species: string;
+  location: string;
+  description: string;
+  accent: string;
+}
+
+export const PLANTS: PlantProfile[] = [
+  {
+    id: "monstera",
+    name: "Mona",
+    species: "Monstera deliciosa",
+    location: "Living room, east window",
+    description: "A broad-leafed tropical plant that likes bright, indirect light.",
+    accent: "from-emerald-500/25 to-lime-400/10",
+  },
+  {
+    id: "snake-plant",
+    name: "Sage",
+    species: "Dracaena trifasciata",
+    location: "Office, north shelf",
+    description: "A resilient architectural plant that prefers drier soil between drinks.",
+    accent: "from-teal-500/25 to-cyan-400/10",
+  },
+  {
+    id: "pothos",
+    name: "Pip",
+    species: "Epipremnum aureum",
+    location: "Kitchen, west counter",
+    description: "A fast-growing trailing plant that enjoys steady moisture and humidity.",
+    accent: "from-lime-500/25 to-yellow-400/10",
+  },
+];
+
+export const PLANT = PLANTS[0];
+
+export function getPlant(id: string | null | undefined): PlantProfile {
+  return PLANTS.find((plant) => plant.id === id) ?? PLANT;
+}
 
 export const SENSORS: Record<SensorKey, SensorMeta> = {
   moisture:    { label: "Soil moisture", unit: "%",        ideal: [40, 60],    scale: [0, 100],   decimals: 0, group: "Soil" },

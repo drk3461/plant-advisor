@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Leaf } from "lucide-react";
+import { Camera, Check, ChevronDown, Leaf, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ActionHistory, ago } from "@/components/action-history";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Chat } from "@/components/chat";
 import { MoistureChart } from "@/components/moisture-chart";
 import { SensorRow } from "@/components/sensor-row";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { PLANT, SENSORS, SENSOR_ORDER } from "@/lib/plantConfig";
+import { PLANTS, SENSORS, SENSOR_ORDER, type PlantProfile } from "@/lib/plantConfig";
 import type { Snapshot } from "@/lib/sensorData";
 import { lastWateredAt, type PlantAction } from "@/lib/actions";
 import { applyOffsets, type Offsets } from "@/lib/effects";
@@ -17,7 +17,8 @@ import { cameraStatus, overallHealth, sensorStatus, type Health, type Status } f
 const POLL_MS = 5000;
 const HEALTH_TONE: Record<Health, Status> = { Healthy: "ok", "Needs attention": "watch", Critical: "bad" };
 
-export function Dashboard() {
+export function Dashboard({ onSignOut }: { onSignOut?: () => void }) {
+  const [plant, setPlant] = useState<PlantProfile>(PLANTS[0]);
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -34,7 +35,7 @@ export function Dashboard() {
     let alive = true;
     async function load() {
       try {
-        const res = await fetch("/api/sensors", { cache: "no-store" });
+        const res = await fetch(`/api/sensors?plant=${plant.id}`, { cache: "no-store" });
         if (!res.ok) throw new Error();
         const data: Snapshot = await res.json();
         if (alive) { setSnap(data); setError(false); }
@@ -46,7 +47,7 @@ export function Dashboard() {
     load();
     const id = setInterval(load, POLL_MS);
     return () => { alive = false; clearInterval(id); };
-  }, []);
+  }, [plant.id]);
 
   // Live readings with the effects of this session's actions applied.
   const readings = snap ? applyOffsets(snap.readings, offsets) : null;
@@ -64,9 +65,9 @@ export function Dashboard() {
       <header className="flex h-16 items-center justify-between">
         <div className="flex items-center gap-2 font-display text-lg font-semibold">
           <Leaf className="h-5 w-5 text-fern" aria-hidden />
-          Plant Advisor
+          <span>MonsteraOSI <span className="hidden text-xs font-normal text-muted sm:inline">— Organic Systems Intelligence</span></span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2"><ThemeToggle />{onSignOut && <button onClick={onSignOut} className="rounded-xl p-2 text-muted hover:bg-line/50" aria-label="Sign out"><LogOut className="h-4 w-4" /></button>}</div>
       </header>
 
       <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6">
@@ -74,8 +75,8 @@ export function Dashboard() {
         <section className="rounded-3xl border border-line bg-surface p-5 shadow-sm lg:col-start-2 lg:row-start-1">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h1 className="font-display text-2xl font-semibold">{PLANT.name}</h1>
-              <p className="text-sm text-muted">{PLANT.location}</p>
+              <h1 className="font-display text-2xl font-semibold">{plant.name}</h1>
+              <p className="text-sm text-muted">{plant.species} · {plant.location}</p>
             </div>
             {health ? <Badge tone={HEALTH_TONE[health]}>{health}</Badge> : <div className="h-6 w-28 rounded-full bg-line/60" />}
           </div>
@@ -89,8 +90,18 @@ export function Dashboard() {
           )}
         </section>
 
+        <section className="rounded-3xl border border-line bg-surface p-5 shadow-sm lg:col-start-2 lg:row-start-4">
+          <div className="flex items-center justify-between"><div><h2 className="font-display text-base font-semibold">Your plants</h2><p className="text-xs text-muted">Each profile has its own preset sensor story.</p></div><ChevronDown className="h-4 w-4 text-muted" /></div>
+          <div className="mt-3 space-y-2">
+            {PLANTS.map((p) => <button key={p.id} onClick={() => setPlant(p)} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${p.id === plant.id ? "border-fern bg-fern/10" : "border-line hover:bg-paper"}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${p.accent}`}><Leaf className="h-4 w-4 text-fern" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{p.name}</span><span className="block truncate text-xs text-muted">{p.species}</span></span>{p.id === plant.id && <Check className="h-4 w-4 text-fern" />}</button>)}
+          </div>
+        </section>
+
         {/* Chat: the main part of the page */}
         <Chat
+          key={plant.id}
+          plantName={plant.name}
+          plantId={plant.id}
           className="h-[72dvh] lg:sticky lg:top-4 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:h-[calc(100dvh-6rem)]"
           offsets={offsets}
           sessionActions={sessionActions}

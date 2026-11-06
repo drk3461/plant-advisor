@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --font-display: "Trebuchet MS", ui-sans-serif, system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, sans-serif;
   --paper: 238 243 233;
   --surface: 250 252 247;
   --ink: 27 42 34;

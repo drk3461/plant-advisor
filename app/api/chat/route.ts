@@ -1,6 +1,6 @@
 import { getSnapshot } from "@/lib/sensorData";
 import { describeSnapshot } from "@/lib/context";
-import { PLANT, SENSORS } from "@/lib/plantConfig";
+import { getPlant, SENSORS } from "@/lib/plantConfig";
 import { applyOffsets, runAction, sanitizeOffsets, TOOLS, type Offsets } from "@/lib/effects";
 import type { PlantAction } from "@/lib/actions";
 
@@ -20,7 +20,7 @@ export const maxDuration = 60;
 const BASE_URL = (process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1").replace(/\/$/, "");
 const MODEL = process.env.LLM_MODEL || "openai/gpt-oss-120b";
 
-const SYSTEM = (context: string) => `You are Plant Advisor, the caretaker of a ${PLANT.name}. You see its live sensors and camera, and you can act on the plant using tools: water it, dose nitrogen/phosphorus/potassium fertilizer salts, adjust pH, flush salts out of the soil, run the humidifier, and turn on the grow light.
+const SYSTEM = (context: string, plantName: string) => `You are MonsteraOSI, the caretaker of ${plantName}. You see its live sensors and camera, and you can act on the plant using tools: water it, dose nitrogen/phosphorus/potassium fertilizer salts, adjust pH, flush salts out of the soil, run the humidifier, and turn on the grow light.
 
 Rules:
 1. Everything you say must come from the data below. Quote readings and numbers exactly as given. Never invent a reading, an action, a time, or a result.
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
   let messages: ChatMessage[] = [];
   let offsets: Offsets = {};
   let sessionActions: PlantAction[] = [];
+  let plantId = "monstera";
   try {
     const body = await req.json();
     messages = (body.messages ?? [])
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
       .slice(-20);
     offsets = sanitizeOffsets(body.offsets);
     sessionActions = Array.isArray(body.sessionActions) ? body.sessionActions.slice(-50) : [];
+    if (typeof body.plantId === "string") plantId = body.plantId;
   } catch {
     return new Response("Bad request.", { status: 400 });
   }
@@ -72,13 +74,13 @@ export async function POST(req: Request) {
         }
 
         // Context is built on the server from the preset data plus effects of actions taken this session.
-        const snap = await getSnapshot();
+        const snap = await getSnapshot(plantId);
         let readings = applyOffsets(snap.readings, offsets);
         const allActions: PlantAction[] = [...sessionActions, ...snap.actions];
         const context = () => describeSnapshot({ ...snap, readings, actions: allActions });
 
         const convo: Record<string, unknown>[] = [
-          { role: "system", content: SYSTEM(context()) },
+          { role: "system", content: SYSTEM(context(), getPlant(plantId).name) },
           ...messages,
         ];
 

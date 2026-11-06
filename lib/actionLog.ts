@@ -13,11 +13,11 @@ import type { PlantAction } from "./actions";
 
 const H = 3_600_000;
 
-export function getPresetActions(): PlantAction[] {
+export function getPresetActions(plantId = "monstera"): PlantAction[] {
   const now = Date.now();
   const at = (hoursAgo: number) => new Date(now - hoursAgo * H).toISOString();
 
-  return [
+  const common: PlantAction[] = [
     {
       id: "preset-1",
       type: "water",
@@ -67,4 +67,25 @@ export function getPresetActions(): PlantAction[] {
       timestamp: at(288),
     },
   ];
+  if (plantId === "snake-plant") {
+    return common.map((action) => ({ ...action, id: `${action.id}-snake` })).filter((action) => action.type !== "water").concat({
+      id: "snake-plant-water",
+      type: "water",
+      title: "Watered 180 ml",
+      reason: "Soil moisture had fallen to 45%, below this plant's 50–70% target.",
+      changes: [{ key: "moisture", before: 45, after: 63 }],
+      timestamp: at(38),
+    });
+  }
+  if (plantId === "pothos") {
+    return common.map((action) => ({ ...action, id: `${action.id}-pothos` })).concat({
+      id: "pothos-nitrogen",
+      type: "fertilize",
+      title: "Added 3 g nitrogen fertilizer",
+      reason: "Nitrogen was 24 mg/kg, below the 30 mg/kg minimum.",
+      changes: [{ key: "nitrogen", before: 24, after: 36 }],
+      timestamp: at(18),
+    });
+  }
+  return common;
 }

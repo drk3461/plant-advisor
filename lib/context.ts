@@ -1,4 +1,4 @@
-import { PLANT, SENSORS, SENSOR_ORDER } from "./plantConfig";
+import { SENSORS, SENSOR_ORDER } from "./plantConfig";
 import { direction, formatValue, sensorStatus } from "./status";
 import { sortNewestFirst, lastWateredAt, type PlantAction } from "./actions";
 import type { Snapshot } from "./sensorData";
@@ -36,7 +36,7 @@ export function describeSnapshot(s: Snapshot): string {
   const sorted = sortNewestFirst(actions);
 
   return [
-    `Plant: ${PLANT.name} (${PLANT.species}), ${PLANT.location}.`,
+    `Plant: ${s.plant.name} (${s.plant.species}), ${s.plant.location}.`,
     `Sensor readings now:`,
     ...lines,
     `Soil moisture over the last 24 h: ${first}% → ${last}%.`,

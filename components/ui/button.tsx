@@ -11,7 +11,7 @@ const buttonVariants = cva(
         ghost: "text-muted hover:bg-line/60 hover:text-ink",
         outline: "border border-line bg-surface text-ink hover:bg-line/50",
       },
-      size: { default: "h-10 px-4", sm: "h-8 px-3", icon: "h-10 w-10" },
+      size: { default: "h-10 px-4", sm: "h-8 px-3", lg: "h-12 px-5 text-base", icon: "h-10 w-10" },
     },
     defaultVariants: { variant: "default", size: "default" },
   }

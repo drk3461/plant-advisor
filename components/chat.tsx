@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { PlantAction } from "@/lib/actions";
 import type { Offsets } from "@/lib/effects";
-import { PLANT, SENSORS } from "@/lib/plantConfig";
+import { SENSORS } from "@/lib/plantConfig";
 import { formatValue } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
@@ -19,13 +19,15 @@ const SUGGESTIONS = [
 ];
 
 interface ChatProps {
+  plantId: string;
+  plantName: string;
   className?: string;
   offsets: Offsets;
   sessionActions: PlantAction[];
   onAction: (action: PlantAction, offsets: Offsets) => void;
 }
 
-export function Chat({ className, offsets, sessionActions, onAction }: ChatProps) {
+export function Chat({ className, plantId, plantName, offsets, sessionActions, onAction }: ChatProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -54,6 +56,7 @@ export function Chat({ className, offsets, sessionActions, onAction }: ChatProps
           messages: next.map(({ role, content }) => ({ role, content })),
           offsets,
           sessionActions,
+          plantId,
         }),
       });
       if (!res.body) throw new Error("No response");
@@ -102,7 +105,7 @@ export function Chat({ className, offsets, sessionActions, onAction }: ChatProps
               <Leaf className="h-6 w-6" aria-hidden />
             </div>
             <h2 className="font-display text-3xl font-semibold leading-tight sm:text-4xl">
-              Ask anything about your {PLANT.name}
+              Ask anything about your {plantName}
             </h2>
             <p className="mt-3 max-w-md text-muted">
               I watch its soil, air and leaves, and I can water it, dose nutrients and more. Ask what I've done, or tell me to take care of it.
