@@ -3,6 +3,8 @@
 import { Camera, Check, ChevronDown, Leaf, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ActionHistory, ago } from "@/components/action-history";
+import { Library } from "@/components/library";
+import { PlantArt } from "@/components/plant-art";
 import { Badge } from "@/components/ui/badge";
 import { Chat } from "@/components/chat";
 import { MoistureChart } from "@/components/moisture-chart";
@@ -19,6 +21,7 @@ const HEALTH_TONE: Record<Health, Status> = { Healthy: "ok", "Needs attention": 
 
 export function Dashboard({ onSignOut }: { onSignOut?: () => void }) {
   const [plant, setPlant] = useState<PlantProfile>(PLANTS[0]);
+  const [view, setView] = useState<"dashboard" | "library">("dashboard");
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -60,6 +63,8 @@ export function Dashboard({ onSignOut }: { onSignOut?: () => void }) {
   const health = snap && readings ? overallHealth(readings, snap.camera) : null;
   const attention = readings ? SENSOR_ORDER.filter((k) => sensorStatus(k, readings[k]) !== "ok") : [];
 
+  if (view === "library") return <Library onBack={() => setView("dashboard")} />;
+
   return (
     <div className="mx-auto min-h-dvh max-w-7xl px-4 pb-8 sm:px-6">
       <header className="flex h-16 items-center justify-between">
@@ -67,13 +72,14 @@ export function Dashboard({ onSignOut }: { onSignOut?: () => void }) {
           <Leaf className="h-5 w-5 text-fern" aria-hidden />
           <span>MonsteraOSI <span className="hidden text-xs font-normal text-muted sm:inline">— Organic Systems Intelligence</span></span>
         </div>
-        <div className="flex items-center gap-2"><ThemeToggle />{onSignOut && <button onClick={onSignOut} className="rounded-xl p-2 text-muted hover:bg-line/50" aria-label="Sign out"><LogOut className="h-4 w-4" /></button>}</div>
+        <div className="flex items-center gap-2"><button onClick={() => setView("library")} className="rounded-xl px-3 py-2 text-sm text-muted hover:bg-line/50">Library</button><ThemeToggle />{onSignOut && <button onClick={onSignOut} className="rounded-xl p-2 text-muted hover:bg-line/50" aria-label="Sign out"><LogOut className="h-4 w-4" /></button>}</div>
       </header>
 
       <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6">
         {/* Plant summary */}
         <section className="rounded-3xl border border-line bg-surface p-5 shadow-sm lg:col-start-2 lg:row-start-1">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-4">
+            <PlantArt emoji={plant.emoji} className="h-20 w-20 shrink-0 text-4xl" />
             <div>
               <h1 className="font-display text-2xl font-semibold">{plant.name}</h1>
               <p className="text-sm text-muted">{plant.species} · {plant.location}</p>
@@ -91,7 +97,7 @@ export function Dashboard({ onSignOut }: { onSignOut?: () => void }) {
         </section>
 
         <section className="rounded-3xl border border-line bg-surface p-5 shadow-sm lg:col-start-2 lg:row-start-4">
-          <div className="flex items-center justify-between"><div><h2 className="font-display text-base font-semibold">Your plants</h2><p className="text-xs text-muted">Each profile has its own preset sensor story.</p></div><ChevronDown className="h-4 w-4 text-muted" /></div>
+          <div className="flex items-center justify-between"><div><h2 className="font-display text-base font-semibold">Your plants</h2><p className="text-xs text-muted">Monitor every plant from one place.</p></div><ChevronDown className="h-4 w-4 text-muted" /></div>
           <div className="mt-3 space-y-2">
             {PLANTS.map((p) => <button key={p.id} onClick={() => setPlant(p)} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${p.id === plant.id ? "border-fern bg-fern/10" : "border-line hover:bg-paper"}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${p.accent}`}><Leaf className="h-4 w-4 text-fern" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{p.name}</span><span className="block truncate text-xs text-muted">{p.species}</span></span>{p.id === plant.id && <Check className="h-4 w-4 text-fern" />}</button>)}
           </div>

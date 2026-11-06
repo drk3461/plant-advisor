@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MonsteraOSI — Organic Systems Intelligence",
-  description: "An autonomous AI plant management system prototype.",
+  description: "MonsteraOSI — Organic Systems Intelligence for autonomous plant care.",
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
